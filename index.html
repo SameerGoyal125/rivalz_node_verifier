@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rivalz Node Verifier</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cera+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #69FF93;
+            font-family: 'Cera Pro', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .background-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.1;
+        }
+        .container {
+            flex: 1;
+            max-width: 600px;
+            margin: auto;
+            padding: 40px;
+            border: 1px solid #69FF93;
+            border-radius: 10px;
+            background-color: #111;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .container::before, .container::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #69FF93;
+            top: -10px;
+            left: -10px;
+            z-index: -1;
+        }
+        .container::after {
+            top: -20px;
+            left: -20px;
+        }
+        h1, p {
+            color: #69FF93;
+        }
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        .form-control {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #69FF93;
+            color: #69FF93;
+            border-radius: 0;
+            box-shadow: none;
+            padding-left: 0;
+            padding-right: 0;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .form-control:focus {
+            background-color: transparent;
+            color: #69FF93;
+            box-shadow: none;
+            border-color: #58cc7a;
+        }
+        .form-control::placeholder {
+            color: #69FF93;
+            opacity: 0.5;
+        }
+        .form-label {
+            display: block;
+            color: #69FF93;
+            margin-bottom: 0.5rem;
+        }
+        .btn-custom {
+            background-color: #69FF93;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 30px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        .btn-custom:hover {
+            background-color: #58cc7a;
+            color: #000;
+        }
+        .modal-content {
+            background-color: #111;
+            color: #69FF93;
+            border: 1px solid #69FF93;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #111;
+            color: #69FF93;
+            margin-top: auto;
+        }
+        footer a {
+            color: #69FF93;
+            text-decoration: none;
+        }
+        footer a:hover {
+            color: #58cc7a;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-lines"></div>
+    <div class="container mt-5">
+        <h1>Rivalz Node Verifier</h1>
+        <p>Having issues with validating your Rivalz node? Enter your crypto wallet address below:</p>
+        <form id="walletForm" class="mt-4">
+            <div class="form-group">
+                <label for="walletAddress" class="form-label">Crypto Wallet Address</label>
+                <input type="text" class="form-control" id="walletAddress" placeholder="Enter your wallet address" required>
+            </div>
+            <button type="submit" class="btn btn-custom">Validate</button>
+        </form>
+    </div>
+
+    <div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="validationModalLabel">Validation Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="loading" class="d-none">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Validating your wallet address...</p>
+                    </div>
+                    <div id="success" class="d-none">
+                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                        <p>Validation successful!</p>
+                        <p>Now go back to <a style="color: #69FF93;" href="https://rivalz.ai/dashboard" target="_blank">Rivalz Dashboard</a> and check. </p>
+                    </div>
+                    <div id="fail" class="d-none">
+                        <i class="fas fa-times-circle fa-3x text-danger"></i>
+                        <p>Validation failed. Please try again.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Like my work? <a href="https://github.com/SameerGoyal125" target="_blank"><i class="fab fa-github"></i> Check out my GitHub</a></p>
+        <p>This is just helping tool. Please give me like on my Github.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#walletForm').on('submit', function(event) {
+                event.preventDefault();
+                var walletAddress = $('#walletAddress').val().trim();
+                $('#validationModal').modal('show');
+                $('#loading').removeClass('d-none');
+                $('#success').addClass('d-none');
+                $('#fail').addClass('d-none');
+                $.ajax({
+                    url: `https://be.rivalz.ai/api-v1/orbit-db/verify-orbit-db/${walletAddress}`, 
+                    method: 'GET',
+                    success: function(response) {
+                        $('#loading').addClass('d-none');
+                        $('#success').removeClass('d-none');
+                    },
+                    error: function() {
+                        $('#loading').addClass('d-none');
+                        $('#fail').removeClass('d-none');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
